@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de enlaces de reseña</title>
+<meta name="description" content="Pega el enlace de Google Maps de un negocio y obtén el enlace directo para dejar una reseña.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="head">
+    <p class="kicker">⭐ Reseñas</p>
+    <h1>Del enlace de Google Maps<br>al enlace para reseñar</h1>
+    <p class="sub">Pega la URL de la ficha de tu negocio y te devuelve el enlace que abre
+      directamente el formulario de valoración. Compártelo con tus clientes.</p>
+  </header>
+
+  <form id="form" class="card" autocomplete="off">
+    <label class="label" for="input">Enlace de Google Maps o Place ID</label>
+    <div class="row">
+      <input id="input" name="input" type="text" inputmode="url" spellcheck="false"
+             placeholder="https://maps.app.goo.gl/… o https://www.google.com/maps/place/…">
+      <button id="submit" type="submit">Generar</button>
+    </div>
+    <p class="hint">Vale el enlace corto de «Compartir», la URL larga de la barra de
+      direcciones o un Place ID (<code>ChIJ…</code>).</p>
+    <div class="examples">
+      <span>Ejemplos:</span>
+      <button type="button" class="chip" data-example="https://www.google.com/maps/place/?q=place_id:ChIJN1t_tDeuEmsRUsoyG83frY4">Place ID</button>
+      <button type="button" class="chip" data-example="https://www.google.com/maps/place/Mercado+de+San+Miguel/@40.4153,-3.7091,17z/data=!3m1!4b1!4m6!3m5!1s0xd42287b4e0a1c8f:0x9a2f1f4b0c3d5e77!8m2!3d40.4153!4d-3.7091">URL larga</button>
+      <button type="button" class="chip" data-example="https://maps.google.com/?cid=11109174138712793719">CID</button>
+    </div>
+  </form>
+
+  <section id="status" class="status" hidden aria-live="polite"></section>
+
+  <section id="result" class="card result" hidden>
+    <div class="result-head">
+      <h2>Enlace para dejar reseña</h2>
+      <span id="badge" class="badge"></span>
+    </div>
+    <div class="row">
+      <input id="review-url" class="out" type="text" readonly>
+      <button id="copy" type="button" class="secondary">Copiar</button>
+    </div>
+    <div class="actions">
+      <a id="open" class="button-link" target="_blank" rel="noopener noreferrer">Probar enlace ↗</a>
+    </div>
+    <dl id="details" class="details"></dl>
+    <p id="note" class="note" hidden></p>
+  </section>
+
+  <section class="card help">
+    <h2>Cómo consigo el enlace del negocio</h2>
+    <ol>
+      <li>Busca el negocio en <strong>Google Maps</strong>.</li>
+      <li>Abre su ficha (la tarjeta con nombre, horario y reseñas).</li>
+      <li>Pulsa <strong>Compartir → Copiar enlace</strong>, o copia la URL de la barra de direcciones.</li>
+      <li>Pégalo aquí arriba.</li>
+    </ol>
+    <p class="note">El enlace generado abre el formulario de reseña de Google. Quien lo use
+      necesita haber iniciado sesión con su cuenta de Google.</p>
+  </section>
+
+  <footer class="foot">Hecho con HTML, CSS y JavaScript. Sin dependencias.</footer>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
