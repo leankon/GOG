@@ -60,8 +60,11 @@ public/parser.js   Lógica pura: URL -> identificadores -> enlaces. La usan
 public/index.html  Interfaz.
 public/app.js      Analiza en el navegador y sólo llama al servidor cuando
                    hace falta (enlaces cortos o búsqueda de Place ID).
-server.js          Sirve public/ y expone POST /api/resolve y GET /api/health.
-test/              Tests del analizador (node:test), sin red.
+lib/resolve.js     Resolución con red: enlaces cortos + Places API.
+api/resolve.js     Función serverless (Vercel) sobre lib/resolve.js.
+api/health.js      Función serverless de diagnóstico.
+server.js          Servidor de desarrollo: sirve public/ y los mismos endpoints.
+test/              Tests (node:test), sin acceso a red.
 ```
 
 El análisis se hace primero en el navegador, así que **la carpeta `public/`
@@ -81,6 +84,32 @@ Devuelve los identificadores encontrados (`placeId`, `cid`, `ftid`, `name`,
 
 El servidor sólo sigue redirecciones hacia dominios de Google (`google.*`,
 `goo.gl`, `g.co`), para que no pueda usarse como proxy abierto.
+
+## Desplegar en Vercel
+
+El repo ya trae la configuración (`vercel.json`): **web estática** desde
+`public/` más **dos funciones serverless** en `api/`.
+
+* Framework Preset: **Other**
+* Build Command: *(vacío)*
+* Output Directory: **public**
+* Variable de entorno opcional: `GOOGLE_MAPS_API_KEY`
+
+Importante: `server.js` es sólo para desarrollo local. Vercel no ejecuta un
+servidor con `listen()`; si se intenta desplegar como función, la respuesta es
+un `500 FUNCTION_INVOCATION_FAILED`. La versión desplegada usa `api/resolve.js`,
+que exporta un handler y comparte la lógica con el servidor local vía
+`lib/resolve.js`.
+
+Para comprobar un despliegue:
+
+```bash
+curl https://TU-DESPLIEGUE.vercel.app/api/health
+# {"ok":true,"apiKeyConfigured":false,"runtime":"v22…"}
+```
+
+Si sólo quieres la web sin funciones, sube `public/` a cualquier hosting
+estático: lo único que se pierde es resolver enlaces cortos.
 
 ## Notas
 

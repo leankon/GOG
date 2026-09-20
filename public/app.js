@@ -84,8 +84,9 @@ async function askServer(url) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
     });
-    if (!response.ok) return null;
-    return await response.json();
+    // Aunque el estado sea 4xx/5xx, el cuerpo trae el motivo: lo mostramos.
+    const data = await response.json().catch(() => null);
+    return data && typeof data === 'object' ? data : null;
   } catch {
     return null; // Sin servidor: modo estático.
   }

@@ -96,7 +96,7 @@ export function parseMapsLink(input) {
 
   const host = url.hostname.toLowerCase();
   const isGoogle =
-    /(^|\.)google\.[a-z.]+$/.test(host) || SHORT_HOSTS.some((h) => host === h || host.endsWith('.' + h));
+    /(^|\.)google\.[a-z]{2,}(\.[a-z]{2})?$/.test(host) || SHORT_HOSTS.some((h) => host === h || host.endsWith('.' + h));
   if (!isGoogle) {
     return fail('El enlace no es de Google Maps (dominio: ' + url.hostname + ').');
   }
