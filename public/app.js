@@ -168,7 +168,7 @@ function render(parsed, links) {
 
   details.innerHTML = '';
   addDetail('Negocio', parsed.name);
-  addDetail('Place ID', parsed.placeId);
+  addDetail(parsed.placeIdCalculado ? 'Place ID (calculado)' : 'Place ID', parsed.placeId);
   addDetail('CID', parsed.cid);
   addDetail('FTID', parsed.ftid);
   for (const extra of links.extras) {
@@ -181,10 +181,11 @@ function render(parsed, links) {
     note.hidden = false;
     note.className = 'note warn';
     note.textContent =
-      'Ojo: sin el Place ID no hay enlace directo al formulario. El de arriba abre el panel ' +
-      'de reseñas de la búsqueda de Google, que sólo existe en ordenador; en el móvil usa el ' +
-      'segundo enlace. Para tener un único enlace que funcione en todos lados hace falta el ' +
-      'Place ID: configura GOOGLE_MAPS_API_KEY en el servidor o pega aquí el Place ID del negocio.';
+      'Este enlace venía sólo con el CID del negocio, y con eso no se puede calcular el ' +
+      'Place ID. El enlace de arriba abre el panel de reseñas de la búsqueda de Google, que ' +
+      'sólo existe en ordenador; en el móvil usa el segundo. Para un único enlace que valga ' +
+      'en todos lados, pega la URL larga de la ficha (la que lleva /maps/place/… en la barra ' +
+      'de direcciones): de ahí sí se calcula el Place ID.';
   }
 
   result.hidden = false;

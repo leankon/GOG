@@ -49,6 +49,58 @@ function decode(value) {
   }
 }
 
+const B64URL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+function base64url(bytes) {
+  let out = '';
+  for (let i = 0; i < bytes.length; i += 3) {
+    const b0 = bytes[i];
+    const b1 = bytes[i + 1];
+    const b2 = bytes[i + 2];
+    out += B64URL[b0 >> 2];
+    out += B64URL[((b0 & 3) << 4) | ((b1 === undefined ? 0 : b1) >> 4)];
+    if (b1 === undefined) break;
+    out += B64URL[((b1 & 15) << 2) | ((b2 === undefined ? 0 : b2) >> 6)];
+    if (b2 === undefined) break;
+    out += B64URL[b2 & 63];
+  }
+  return out;
+}
+
+/** Los 8 bytes de un entero de 64 bits, en little endian. */
+function leBytes(valor) {
+  const out = new Uint8Array(8);
+  for (let i = 0; i < 8; i++) out[i] = Number((valor >> BigInt(8 * i)) & 0xffn);
+  return out;
+}
+
+/**
+ * Calcula el Place ID a partir del feature id de la URL de Maps.
+ *
+ * El par `0x95bcb5d08d830731:0x7f50e26552999af3` que Google mete en el
+ * parámetro `data` son dos enteros de 64 bits; el Place ID no es más que esos
+ * dos números empaquetados en protobuf y codificados en base64url. O sea: se
+ * calcula, no hay que preguntarle nada a Google.
+ *
+ * 0x95bcb5d08d830731 + 0x7f50e26552999af3 -> ChIJMQeDjdC1vJUR85qZUmXiUH8
+ */
+export function placeIdFromFtid(ftid) {
+  const match = String(ftid || '').match(FTID);
+  if (!match) return null;
+  try {
+    const bytes = new Uint8Array(20);
+    bytes[0] = 0x0a; // campo 1, tipo bytes
+    bytes[1] = 0x12; // longitud 18
+    bytes[2] = 0x09; // subcampo 1, fixed64
+    bytes.set(leBytes(BigInt(match[1])), 3);
+    bytes[11] = 0x11; // subcampo 2, fixed64
+    bytes.set(leBytes(BigInt(match[2])), 12);
+    return base64url(bytes);
+  } catch {
+    return null;
+  }
+}
+
 /** El CID decimal es la segunda mitad del FTID, en hexadecimal. */
 export function ftidToCid(ftid) {
   const match = String(ftid || '').match(FTID);
@@ -119,7 +171,7 @@ export function parseMapsLink(input) {
   const coords = extractCoords(href);
 
   // Caso 2: Place ID explícito, en cualquiera de sus variantes.
-  const placeId =
+  let placeId =
     params.get('place_id') ||
     params.get('placeid') ||
     params.get('query_place_id') ||
@@ -142,6 +194,18 @@ export function parseMapsLink(input) {
     cleanCid(firstMatch(href, /[?&](?:cid|ludocid)=(\d{6,})/)) ||
     (ftid ? ftidToCid(ftid) : null);
 
+  // Con el feature id completo el Place ID se calcula: eso convierte casi
+  // cualquier URL de Maps en el enlace directo, que es el único que funciona
+  // igual en el móvil que en el ordenador.
+  let placeIdCalculado = false;
+  if (!placeId && ftid) {
+    const calculado = placeIdFromFtid(ftid);
+    if (calculado) {
+      placeId = calculado;
+      placeIdCalculado = true;
+    }
+  }
+
   if (!placeId && !ftid && !cid) {
     return result({
       ok: false,
@@ -154,7 +218,7 @@ export function parseMapsLink(input) {
     });
   }
 
-  return result({ placeId, ftid, cid, name, coords, source: 'maps-url' });
+  return result({ placeId, placeIdCalculado, ftid, cid, name, coords, source: 'maps-url' });
 }
 
 function normalizeFtid(value) {
@@ -218,6 +282,7 @@ function result(fields = {}) {
     error: fields.error || null,
     needsResolution: Boolean(fields.needsResolution),
     placeId: fields.placeId || null,
+    placeIdCalculado: Boolean(fields.placeIdCalculado),
     cid: fields.cid || null,
     ftid: fields.ftid || null,
     name: fields.name || null,

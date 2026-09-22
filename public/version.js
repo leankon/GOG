@@ -5,4 +5,4 @@
  * una versión distinta a la que devuelve la API, hay caché o un despliegue a
  * medias. Súbela al cambiar algo que se note en la interfaz.
  */
-export const VERSION = '1.4.0';
+export const VERSION = '2.0.0';

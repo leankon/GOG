@@ -53,19 +53,19 @@ un error genérico.
 
 ## Los dos niveles de resultado
 
-* **Enlace directo** (`exact`) — se ha obtenido el Place ID, así que se genera
-  el enlace canónico de Google:
+* **Enlace directo** (`exact`) — se ha obtenido el Place ID (de la propia URL o
+  **calculado** a partir del feature id), así que se genera el enlace canónico
+  de Google:
   `https://search.google.com/local/writereview?placeid=<PLACE_ID>`
   Abre el formulario de reseña sin pasos intermedios.
 
   En el móvil abre el mismo formulario, dentro de la app de Google o del
   navegador; hay que tener la sesión de Google iniciada.
 
-* **Aproximado** (`partial`) — la URL sólo traía el CID/FTID del negocio
-  (el par `0x…:0x…` del parámetro `data`), no el Place ID. Google no publica
-  ninguna conversión de CID a Place ID, así que se genera el enlace al panel
-  de reseñas de la búsqueda (`#lrd=…,3`), que es lo más cerca que se llega sin
-  API. La app lo avisa en pantalla en vez de hacerlo pasar por directo.
+* **Aproximado** (`partial`) — la URL sólo traía el **CID** del negocio, sin el
+  feature id completo. Con medio identificador no se puede calcular el Place
+  ID, así que se genera el enlace al panel de reseñas de la búsqueda
+  (`#lrd=…,3`). La app lo avisa en pantalla en vez de hacerlo pasar por directo.
 
   **Ese enlace sólo funciona en ordenador**: el panel de reseñas de la búsqueda
   no existe en la versión móvil. Por eso, en este caso la app da además un
@@ -73,8 +73,22 @@ un error genérico.
   Maps para valorar desde ahí. Un único enlace que valga en todos lados exige el
   Place ID.
 
-Para convertir esos casos en enlace directo, arranca la app con una clave de
-la **Places API (New)**:
+### El Place ID se calcula, no se consulta
+
+El par `!1s0x95bcb5d08d830731:0x7f50e26552999af3` que Google mete en el
+parámetro `data` de sus URLs son dos enteros de 64 bits. El Place ID es
+exactamente esos dos números empaquetados en protobuf y codificados en
+base64url:
+
+```
+0x95bcb5d08d830731 + 0x7f50e26552999af3  ->  ChIJMQeDjdC1vJUR85qZUmXiUH8
+```
+
+`placeIdFromFtid()` hace esa cuenta, así que **cualquier URL larga de Maps da
+el enlace directo sin llamar a ninguna API**. Sólo quedan en "aproximado" los
+enlaces que traen únicamente el CID (media identificación).
+
+Para esos, arranca la app con una clave de la **Places API (New)**:
 
 ```bash
 GOOGLE_MAPS_API_KEY=tu_clave npm start

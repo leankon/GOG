@@ -28,7 +28,33 @@ test('URL larga con data=!1s0x…:0x… devuelve FTID, CID, nombre y coordenadas
   assert.equal(parsed.cid, BigInt('0x9a2f1f4b0c3d5e77').toString(10));
   assert.equal(parsed.name, 'Mercado de San Miguel');
   assert.deepEqual(parsed.coords, { lat: 40.4153, lng: -3.7091 });
-  assert.equal(buildReviewLinks(parsed).confidence, 'partial');
+  // Con el feature id completo el Place ID se calcula, así que el enlace es
+  // el directo y no el aproximado.
+  assert.equal(parsed.placeIdCalculado, true);
+  assert.equal(buildReviewLinks(parsed).confidence, 'exact');
+});
+
+test('el Place ID se calcula a partir del feature id', async () => {
+  const { placeIdFromFtid } = await import('../public/parser.js');
+  // Caso conocido: los dos enteros de 64 bits empaquetados en protobuf.
+  assert.equal(
+    placeIdFromFtid('0x95bcb5d08d830731:0x7f50e26552999af3'),
+    'ChIJMQeDjdC1vJUR85qZUmXiUH8'
+  );
+  assert.equal(placeIdFromFtid('sin feature id'), null);
+});
+
+test('una URL larga da el mismo enlace para ordenador y para móvil', () => {
+  const parsed = parseMapsLink(
+    'https://www.google.com/maps/place/X/@0,0,17z/data=!4m6!3m5!1s0x95bcb5d08d830731:0x7f50e26552999af3!8m2!3d0!4d0'
+  );
+  const links = buildReviewLinks(parsed);
+  assert.equal(links.confidence, 'exact');
+  assert.equal(links.mobile, links.review);
+  assert.equal(
+    links.review,
+    'https://search.google.com/local/writereview?placeid=ChIJMQeDjdC1vJUR85qZUmXiUH8'
+  );
 });
 
 test('URL con query_place_id (enlaces de indicaciones)', () => {
