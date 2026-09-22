@@ -58,11 +58,20 @@ un error genérico.
   `https://search.google.com/local/writereview?placeid=<PLACE_ID>`
   Abre el formulario de reseña sin pasos intermedios.
 
+  En el móvil abre el mismo formulario, dentro de la app de Google o del
+  navegador; hay que tener la sesión de Google iniciada.
+
 * **Aproximado** (`partial`) — la URL sólo traía el CID/FTID del negocio
   (el par `0x…:0x…` del parámetro `data`), no el Place ID. Google no publica
   ninguna conversión de CID a Place ID, así que se genera el enlace al panel
   de reseñas de la búsqueda (`#lrd=…,3`), que es lo más cerca que se llega sin
   API. La app lo avisa en pantalla en vez de hacerlo pasar por directo.
+
+  **Ese enlace sólo funciona en ordenador**: el panel de reseñas de la búsqueda
+  no existe en la versión móvil. Por eso, en este caso la app da además un
+  *enlace para móvil* (`maps.google.com/?cid=…`), que abre la ficha en la app de
+  Maps para valorar desde ahí. Un único enlace que valga en todos lados exige el
+  Place ID.
 
 Para convertir esos casos en enlace directo, arranca la app con una clave de
 la **Places API (New)**:

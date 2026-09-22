@@ -235,14 +235,17 @@ function result(fields = {}) {
  * cuando sólo tenemos el CID: abre la ficha o el panel de reseñas.
  */
 export function buildReviewLinks(parsed) {
-  if (!parsed || !parsed.ok) return { review: null, confidence: 'none', extras: [] };
+  if (!parsed || !parsed.ok) return { review: null, mobile: null, confidence: 'none', extras: [] };
 
   const extras = [];
   let review = null;
+  let mobile = null;
   let confidence = 'none';
 
   if (parsed.placeId) {
     review = `https://search.google.com/local/writereview?placeid=${encodeURIComponent(parsed.placeId)}`;
+    // El enlace canónico funciona igual en el móvil.
+    mobile = review;
     confidence = 'exact';
     extras.push({
       label: 'Ficha del negocio',
@@ -253,15 +256,19 @@ export function buildReviewLinks(parsed) {
   const ftid = parsed.ftid || (parsed.cid ? `0x0:${cidToHex(parsed.cid)}` : null);
   if (!review && ftid) {
     // Sin Place ID, lo más cerca que se llega es el panel de reseñas de la
-    // búsqueda: el sufijo ",3" abre la pestaña de escribir reseña.
+    // búsqueda: el sufijo ",3" abre la pestaña de escribir reseña. OJO: ese
+    // panel sólo existe en la búsqueda de escritorio, así que en el móvil no
+    // hace nada; allí lo que sirve es abrir la ficha en la app de Maps y
+    // pulsar las estrellas.
     const query = parsed.name ? encodeURIComponent(parsed.name) : '';
     review = `https://www.google.com/search?q=${query}#lrd=${ftid},3,,,`;
     confidence = 'partial';
+    if (parsed.cid) mobile = `https://maps.google.com/?cid=${parsed.cid}`;
   }
 
   if (parsed.cid) {
     extras.push({ label: 'Ficha por CID', url: `https://maps.google.com/?cid=${parsed.cid}` });
   }
 
-  return { review, confidence, extras };
+  return { review, mobile, confidence, extras };
 }

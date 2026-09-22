@@ -10,6 +10,11 @@ const reviewUrl = document.getElementById('review-url');
 const copyBtn = document.getElementById('copy');
 const openLink = document.getElementById('open');
 const badge = document.getElementById('badge');
+const reviewLabel = document.getElementById('review-label');
+const mobileBlock = document.getElementById('mobile-block');
+const mobileUrl = document.getElementById('mobile-url');
+const copyMobileBtn = document.getElementById('copy-mobile');
+const openMobile = document.getElementById('open-mobile');
 const details = document.getElementById('details');
 const note = document.getElementById('note');
 
@@ -72,17 +77,19 @@ for (const chip of document.querySelectorAll('.chip')) {
   });
 }
 
-copyBtn.addEventListener('click', async () => {
+async function copiar(campo, boton) {
   try {
-    await navigator.clipboard.writeText(reviewUrl.value);
-    copyBtn.textContent = '¡Copiado!';
+    await navigator.clipboard.writeText(campo.value);
   } catch {
-    reviewUrl.select();
+    campo.select();
     document.execCommand('copy');
-    copyBtn.textContent = '¡Copiado!';
   }
-  setTimeout(() => (copyBtn.textContent = 'Copiar'), 1800);
-});
+  boton.textContent = '¡Copiado!';
+  setTimeout(() => (boton.textContent = 'Copiar'), 1800);
+}
+
+copyBtn.addEventListener('click', () => copiar(reviewUrl, copyBtn));
+copyMobileBtn.addEventListener('click', () => copiar(mobileUrl, copyMobileBtn));
 
 async function generate(value) {
   setBusy(true);
@@ -145,6 +152,16 @@ function render(parsed, links) {
   reviewUrl.value = links.review;
   openLink.href = links.review;
 
+  // El enlace aproximado usa el panel de reseñas de la búsqueda de escritorio,
+  // que en el móvil no existe: ahí hay que ofrecer la ficha de la app de Maps.
+  const necesitaAlternativaMovil = Boolean(links.mobile) && links.mobile !== links.review;
+  reviewLabel.hidden = !necesitaAlternativaMovil;
+  mobileBlock.hidden = !necesitaAlternativaMovil;
+  if (necesitaAlternativaMovil) {
+    mobileUrl.value = links.mobile;
+    openMobile.href = links.mobile;
+  }
+
   const exact = links.confidence === 'exact';
   badge.textContent = exact ? 'Enlace directo' : 'Aproximado';
   badge.className = 'badge ' + links.confidence;
@@ -164,9 +181,10 @@ function render(parsed, links) {
     note.hidden = false;
     note.className = 'note warn';
     note.textContent =
-      'Este enlace abre el panel de reseñas del negocio, pero no es el formulario directo: ' +
-      'ese enlace canónico necesita el Place ID. Para obtenerlo, arranca la app con una clave ' +
-      'de la Places API (GOOGLE_MAPS_API_KEY) o pega el Place ID del negocio.';
+      'Ojo: sin el Place ID no hay enlace directo al formulario. El de arriba abre el panel ' +
+      'de reseñas de la búsqueda de Google, que sólo existe en ordenador; en el móvil usa el ' +
+      'segundo enlace. Para tener un único enlace que funcione en todos lados hace falta el ' +
+      'Place ID: configura GOOGLE_MAPS_API_KEY en el servidor o pega aquí el Place ID del negocio.';
   }
 
   result.hidden = false;

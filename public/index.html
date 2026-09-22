@@ -46,12 +46,26 @@
       <h2>Enlace para dejar reseña</h2>
       <span id="badge" class="badge"></span>
     </div>
+    <p id="review-label" class="label" hidden>Para ordenador</p>
     <div class="row">
       <input id="review-url" class="out" type="text" readonly>
       <button id="copy" type="button" class="secondary">Copiar</button>
     </div>
     <div class="actions">
       <a id="open" class="button-link" target="_blank" rel="noopener noreferrer">Probar enlace ↗</a>
+    </div>
+
+    <div id="mobile-block" hidden>
+      <p class="label">Para móvil</p>
+      <div class="row">
+        <input id="mobile-url" class="out" type="text" readonly>
+        <button id="copy-mobile" type="button" class="secondary">Copiar</button>
+      </div>
+      <div class="actions">
+        <a id="open-mobile" class="button-link" target="_blank" rel="noopener noreferrer">Probar en el móvil ↗</a>
+      </div>
+      <p class="note">Abre la ficha en la app de Google Maps. Dentro hay que bajar
+        hasta las estrellas y tocar «Escribir una reseña».</p>
     </div>
     <dl id="details" class="details"></dl>
     <p id="note" class="note" hidden></p>

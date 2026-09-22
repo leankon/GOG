@@ -90,3 +90,20 @@ test('texto de "Compartir" del móvil: se queda con el enlace y el nombre', () =
 test('un enlace corto a secas no inventa nombre', () => {
   assert.equal(parseMapsLink('https://maps.app.goo.gl/AbCdEf123').name, null);
 });
+
+test('el caso aproximado ofrece un enlace distinto para el móvil', () => {
+  const parsed = parseMapsLink('https://maps.google.com/?cid=11109174138712793719');
+  const links = buildReviewLinks(parsed);
+  assert.equal(links.confidence, 'partial');
+  // El de escritorio usa el panel de la búsqueda, que en móvil no existe.
+  assert.match(links.review, /#lrd=/);
+  // El de móvil abre la ficha en la app de Maps.
+  assert.equal(links.mobile, 'https://maps.google.com/?cid=11109174138712793719');
+});
+
+test('con Place ID el mismo enlace vale para ordenador y móvil', () => {
+  const links = buildReviewLinks(parseMapsLink('ChIJN1t_tDeuEmsRUsoyG83frY4'));
+  assert.equal(links.confidence, 'exact');
+  assert.equal(links.mobile, links.review);
+  assert.match(links.review, /^https:\/\/search\.google\.com\/local\/writereview\?placeid=/);
+});
