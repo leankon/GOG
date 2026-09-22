@@ -141,3 +141,8 @@ button:disabled { opacity: .6; cursor: progress; }
 .help li { margin-bottom: 4px; }
 
 .foot { text-align: center; font-size: 13px; color: var(--muted); margin-top: 28px; }
+
+.status strong { display: block; margin-bottom: 6px; }
+.status p { margin: 6px 0 0; }
+.status .why { color: var(--muted); }
+.status a { color: inherit; }

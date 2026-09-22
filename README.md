@@ -27,6 +27,17 @@ Sin dependencias: sólo Node.js 18 o superior.
 | Enlace corto | `https://maps.app.goo.gl/abc123` | Se resuelve en el servidor y se trata según su destino |
 
 También funciona si pegas el enlace dentro de un texto: se extrae la primera URL.
+Eso cubre el caso del móvil, donde **Compartir** copia el nombre del sitio, la
+dirección y el enlace corto juntos; ese nombre se usa como plan B si el enlace
+corto no se puede resolver (requiere `GOOGLE_MAPS_API_KEY`).
+
+### Enlaces cortos y móvil
+
+`maps.app.goo.gl` no contiene ningún identificador: hay que seguir su
+redirección, y el navegador no puede hacerlo (CORS). Lo hace `/api/resolve`, así
+que **el flujo del móvil necesita que las funciones estén desplegadas**. Si no lo
+están, la app lo dice explícitamente (`/api/health` responde 404) en vez de dar
+un error genérico.
 
 ## Los dos niveles de resultado
 
@@ -101,12 +112,20 @@ un `500 FUNCTION_INVOCATION_FAILED`. La versión desplegada usa `api/resolve.js`
 que exporta un handler y comparte la lógica con el servidor local vía
 `lib/resolve.js`.
 
-Para comprobar un despliegue:
+Para comprobar un despliegue de punta a punta:
 
 ```bash
-curl https://TU-DESPLIEGUE.vercel.app/api/health
-# {"ok":true,"apiKeyConfigured":false,"runtime":"v22…"}
+npm run check -- https://TU-DESPLIEGUE.vercel.app
 ```
+
+```
+✓ Web estática — index.html servido
+✓ API /api/health — runtime v22.x, Places API sin clave
+✓ API /api/resolve — https://search.google.com/local/writereview?placeid=ChIJ…
+```
+
+Si `/api/health` da 404, las funciones no están desplegadas: la web se sirve,
+pero los enlaces cortos no se podrán resolver.
 
 Si sólo quieres la web sin funciones, sube `public/` a cualquier hosting
 estático: lo único que se pierde es resolver enlaces cortos.

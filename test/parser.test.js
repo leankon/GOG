@@ -79,3 +79,14 @@ test('sin datos utilizables no se inventa enlace', () => {
   assert.equal(links.review, null);
   assert.equal(links.confidence, 'none');
 });
+
+test('texto de "Compartir" del móvil: se queda con el enlace y el nombre', () => {
+  const parsed = parseMapsLink('Bar Manolo\nCalle Mayor 1, 28013 Madrid\nhttps://maps.app.goo.gl/AbCdEf123');
+  assert.equal(parsed.needsResolution, true);
+  assert.equal(parsed.url, 'https://maps.app.goo.gl/AbCdEf123');
+  assert.equal(parsed.name, 'Bar Manolo');
+});
+
+test('un enlace corto a secas no inventa nombre', () => {
+  assert.equal(parseMapsLink('https://maps.app.goo.gl/AbCdEf123').name, null);
+});

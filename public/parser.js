@@ -102,8 +102,15 @@ export function parseMapsLink(input) {
   }
 
   if (isShortLink(url)) {
-    // No hay nada que extraer todavía: hay que seguir la redirección.
-    return result({ needsResolution: true, source: 'short-link', url: url.href });
+    // No hay nada que extraer todavía: hay que seguir la redirección. Si el
+    // usuario pegó el texto completo de "Compartir" del móvil, ese texto trae
+    // el nombre del sitio: sirve de plan B para buscarlo por nombre.
+    return result({
+      needsResolution: true,
+      source: 'short-link',
+      url: url.href,
+      name: extractSharedName(raw, url.href),
+    });
   }
 
   const href = url.href;
@@ -172,6 +179,24 @@ function extractName(url) {
   }
   const q = url.searchParams.get('q') || url.searchParams.get('query');
   if (q && !/^place_id:/.test(q) && !/^-?\d+(\.\d+)?,/.test(q)) return decode(q);
+  return null;
+}
+
+/**
+ * Texto de "Compartir" de Google Maps en el móvil:
+ *
+ *   Nombre del sitio
+ *   Calle Mayor 1, Madrid
+ *   https://maps.app.goo.gl/xxxx
+ *
+ * Nos quedamos con la primera línea que no sea una URL.
+ */
+function extractSharedName(raw, url) {
+  const text = String(raw).split(url).join(' ');
+  for (const line of text.split(/[\n\r]+/)) {
+    const clean = line.replace(/https?:\/\/\S+/g, '').trim().replace(/^[-–—:·|]+|[-–—:·|]+$/g, '').trim();
+    if (clean.length >= 3 && clean.length <= 120) return clean;
+  }
   return null;
 }
 
