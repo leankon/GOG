@@ -9,6 +9,9 @@ function fakeRes() {
   return {
     statusCode: null,
     body: null,
+    setHeader() {
+      return this;
+    },
     status(code) {
       this.statusCode = code;
       return this;
@@ -75,4 +78,30 @@ test('el parser tampoco acepta dominios que sólo contienen "google."', async ()
   const parsed = parseMapsLink('https://google.com.evil.net/maps/place/?q=place_id:ChIJN1t_tDeuEmsRUsoyG83frY4');
   assert.equal(parsed.ok, false);
   assert.match(parsed.error, /no es de Google Maps/);
+});
+
+test('parseFromHtml rescata el identificador del HTML de destino', async () => {
+  const { parseFromHtml } = await import('../lib/resolve.js');
+
+  // URL incrustada con las barras escapadas, como la sirve Google.
+  const conPlace = parseFromHtml(
+    '<script>var x="https:\\/\\/www.google.com\\/maps\\/place\\/Bar+Manolo\\/data=!4m2!3m1!1s0xd42287b4e0a1c8f:0x9a2f1f4b0c3d5e77";</script>'
+  );
+  assert.equal(conPlace.ftid, '0xd42287b4e0a1c8f:0x9a2f1f4b0c3d5e77');
+  assert.equal(conPlace.name, 'Bar Manolo');
+
+  // Sin URL completa, pero con el Place ID suelto en la página.
+  const suelto = parseFromHtml('<meta content="ChIJN1t_tDeuEmsRUsoyG83frY4">');
+  assert.equal(suelto.placeId, 'ChIJN1t_tDeuEmsRUsoyG83frY4');
+
+  // Una página sin nada aprovechable no inventa resultados.
+  assert.equal(parseFromHtml('<html><body>Sin datos</body></html>'), null);
+  assert.equal(parseFromHtml(''), null);
+});
+
+test('la versión de la web y la de la API son la misma', async () => {
+  const { VERSION } = await import('../public/version.js');
+  const res = fakeRes();
+  health({ method: 'GET' }, res);
+  assert.equal(res.body.version, VERSION);
 });

@@ -127,6 +127,20 @@ npm run check -- https://TU-DESPLIEGUE.vercel.app
 Si `/api/health` da 404, las funciones no están desplegadas: la web se sirve,
 pero los enlaces cortos no se podrán resolver.
 
+### Saber qué build está sirviéndose
+
+El pie de la página muestra la versión (`public/version.js`) y la contrasta con
+la que devuelve `/api/health`:
+
+* `v1.2.0 · API viva` — todo al día.
+* `v1.2.0 (API v1.1.0: despliegue desparejado)` — la web y las funciones son de
+  builds distintos.
+* Sin versión en el pie — estás viendo un build anterior a la 1.2.0, casi
+  siempre por caché del navegador (recarga forzada) o por un despliegue viejo.
+
+`vercel.json` sirve HTML, CSS y JS con `must-revalidate` para que el navegador
+no se quede con una copia antigua.
+
 Si sólo quieres la web sin funciones, sube `public/` a cualquier hosting
 estático: lo único que se pierde es resolver enlaces cortos.
 

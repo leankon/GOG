@@ -1,4 +1,5 @@
 import { parseMapsLink, buildReviewLinks } from './parser.js';
+import { VERSION } from './version.js';
 
 const form = document.getElementById('form');
 const input = document.getElementById('input');
@@ -11,6 +12,22 @@ const openLink = document.getElementById('open');
 const badge = document.getElementById('badge');
 const details = document.getElementById('details');
 const note = document.getElementById('note');
+
+// Sello de versión: deja ver en la propia página qué build se está sirviendo.
+const versionBox = document.getElementById('version');
+if (versionBox) {
+  versionBox.textContent = 'v' + VERSION;
+  fetch('/api/health', { cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((data) => {
+      if (!data) return;
+      versionBox.textContent =
+        data.version && data.version !== VERSION
+          ? `v${VERSION} (API v${data.version}: despliegue desparejado)`
+          : `v${VERSION} · API viva`;
+    })
+    .catch(() => {});
+}
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();

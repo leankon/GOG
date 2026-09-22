@@ -9,6 +9,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolve } from './lib/resolve.js';
+import { VERSION } from './public/version.js';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(ROOT, 'public');
@@ -88,6 +89,7 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/health') {
     return sendJson(res, 200, {
       ok: true,
+      version: VERSION,
       apiKeyConfigured: Boolean(process.env.GOOGLE_MAPS_API_KEY),
       runtime: process.version,
     });

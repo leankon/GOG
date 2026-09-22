@@ -22,7 +22,9 @@ const web = await comprobar('Web estática', async () => {
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const html = await res.text();
   if (!html.includes('id="form"')) throw new Error('la respuesta no es la página de la app');
-  return 'index.html servido';
+  // Si la web y la API no coinciden en versión, hay caché o despliegue a medias.
+  const esNueva = html.includes('id="version"');
+  return esNueva ? 'index.html servido (con sello de versión)' : 'index.html servido (BUILD ANTIGUO: sin sello de versión)';
 });
 
 const health = await comprobar('API /api/health', async () => {
@@ -30,7 +32,7 @@ const health = await comprobar('API /api/health', async () => {
   if (res.status === 404) throw new Error('404: las funciones de api/ no están desplegadas');
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const data = await res.json();
-  return `runtime ${data.runtime}, Places API ${data.apiKeyConfigured ? 'configurada' : 'sin clave'}`;
+  return `v${data.version}, runtime ${data.runtime}, Places API ${data.apiKeyConfigured ? 'configurada' : 'sin clave'}`;
 });
 
 const resolve = await comprobar('API /api/resolve', async () => {
