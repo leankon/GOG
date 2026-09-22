@@ -34,6 +34,37 @@ form.addEventListener('submit', async (event) => {
   await generate(input.value);
 });
 
+// En el móvil, pegar a mano en un campo es incómodo: un botón lo resuelve.
+const pasteBtn = document.getElementById('paste');
+pasteBtn.addEventListener('click', async () => {
+  try {
+    const texto = await navigator.clipboard.readText();
+    if (!texto.trim()) throw new Error('portapapeles vacío');
+    input.value = texto.trim();
+    await generate(input.value);
+  } catch {
+    // Safari y algunos navegadores no dejan leer el portapapeles sin gesto
+    // explícito: al menos dejamos el campo listo para pegar a mano.
+    input.focus();
+    showStatus('Pega el enlace en el campo (mantén pulsado → Pegar) y dale a Generar.', 'loading');
+  }
+});
+
+// El service worker sólo sirve para poder instalar la app: instalada, aparece
+// en el menú "Compartir" de Google Maps (share_target del manifiesto).
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// Permite llegar con el enlace ya puesto: ?u=<enlace> (lo usa el atajo de
+// compartir del móvil) y también ?text= / ?url= del share target.
+const entrada = new URLSearchParams(location.search);
+const compartido = entrada.get('u') || entrada.get('url') || entrada.get('text') || entrada.get('shared');
+if (compartido) {
+  input.value = compartido.trim();
+  generate(input.value);
+}
+
 for (const chip of document.querySelectorAll('.chip')) {
   chip.addEventListener('click', () => {
     input.value = chip.dataset.example;
@@ -92,6 +123,8 @@ async function generate(value) {
   render(parsed, links);
 }
 
+let ultimaRespuesta = null;
+
 async function askServer(url) {
   try {
     const response = await fetch('/api/resolve', {
@@ -101,7 +134,8 @@ async function askServer(url) {
     });
     // Aunque el estado sea 4xx/5xx, el cuerpo trae el motivo: lo mostramos.
     const data = await response.json().catch(() => null);
-    return data && typeof data === 'object' ? data : null;
+    ultimaRespuesta = data && typeof data === 'object' ? data : null;
+    return ultimaRespuesta;
   } catch {
     return null; // Sin servidor: modo estático.
   }
@@ -182,6 +216,30 @@ function showShortLinkHelp(shortUrl, reason) {
   );
 
   statusBox.append(title, why, how);
+  if (ultimaRespuesta) statusBox.append(detallesTecnicos(ultimaRespuesta));
+}
+
+/** Detalle plegable: lo que hizo el servidor, para poder diagnosticar de verdad. */
+function detallesTecnicos(respuesta) {
+  const box = document.createElement('details');
+  box.className = 'debug';
+  const resumen = document.createElement('summary');
+  resumen.textContent = 'Detalles técnicos';
+  const pre = document.createElement('pre');
+  pre.textContent = JSON.stringify(
+    {
+      pasos: respuesta.steps || [],
+      debug: respuesta.debug || null,
+      placeId: respuesta.placeId || null,
+      cid: respuesta.cid || null,
+      ftid: respuesta.ftid || null,
+      apiKey: respuesta.apiKeyConfigured ?? null,
+    },
+    null,
+    1
+  );
+  box.append(resumen, pre);
+  return box;
 }
 
 /** Averigua si el problema es que no hay API desplegada, y lo dice claro. */

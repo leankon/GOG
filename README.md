@@ -31,6 +31,18 @@ Eso cubre el caso del móvil, donde **Compartir** copia el nombre del sitio, la
 dirección y el enlace corto juntos; ese nombre se usa como plan B si el enlace
 corto no se puede resolver (requiere `GOOGLE_MAPS_API_KEY`).
 
+### Desde el móvil
+
+Tres formas, de más cómoda a menos:
+
+1. **Instalar la app** (Chrome/Android: menú → *Añadir a pantalla de inicio*).
+   Una vez instalada aparece en el menú **Compartir** de Google Maps: se
+   comparte la ficha directamente con la app y el enlace se genera solo
+   (`share_target` del manifiesto).
+2. **Botón Pegar**: Compartir → *Copiar enlace* en Maps, abrir la app y pulsar
+   **Pegar**. Lee el portapapeles y genera sin más pasos.
+3. **Enlace directo**: `https://tu-app/?u=<enlace>` genera al cargar.
+
 ### Enlaces cortos y móvil
 
 `maps.app.goo.gl` no contiene ningún identificador: hay que seguir su
@@ -66,6 +78,8 @@ el servidor, nunca se envía al navegador.
 ## Cómo está organizado
 
 ```
+public/manifest.webmanifest  Manifiesto PWA con share_target (menú Compartir).
+public/sw.js       Service worker mínimo: sólo habilita la instalación.
 public/parser.js   Lógica pura: URL -> identificadores -> enlaces. La usan
                    tanto el navegador como el servidor (mismo módulo ESM).
 public/index.html  Interfaz.
@@ -95,6 +109,10 @@ Devuelve los identificadores encontrados (`placeId`, `cid`, `ftid`, `name`,
 
 El servidor sólo sigue redirecciones hacia dominios de Google (`google.*`,
 `goo.gl`, `g.co`), para que no pueda usarse como proxy abierto.
+
+La respuesta incluye `steps` y `debug` (URL final, código HTTP, tamaño de la
+respuesta o el fallo). La web los enseña en el desplegable **Detalles técnicos**
+del aviso de error, así que se puede diagnosticar desde el propio móvil.
 
 ## Desplegar en Vercel
 

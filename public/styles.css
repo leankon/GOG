@@ -146,3 +146,15 @@ button:disabled { opacity: .6; cursor: progress; }
 .status p { margin: 6px 0 0; }
 .status .why { color: var(--muted); }
 .status a { color: inherit; }
+
+.debug { margin-top: 10px; font-size: 12px; color: var(--muted); }
+.debug summary { cursor: pointer; }
+.debug pre {
+  margin: 8px 0 0;
+  padding: 10px;
+  background: var(--bg);
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 11px;
+  line-height: 1.45;
+}

@@ -6,6 +6,9 @@
 <title>Generador de enlaces de reseña</title>
 <meta name="description" content="Pega el enlace de Google Maps de un negocio y obtén el enlace directo para dejar una reseña.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a73e8">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -22,6 +25,7 @@
     <div class="row">
       <input id="input" name="input" type="text" inputmode="url" spellcheck="false"
              placeholder="https://maps.app.goo.gl/… o https://www.google.com/maps/place/…">
+      <button id="paste" type="button" class="secondary" title="Pegar del portapapeles">Pegar</button>
       <button id="submit" type="submit">Generar</button>
     </div>
     <p class="hint">Vale el enlace corto de «Compartir», la URL larga de la barra de
