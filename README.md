@@ -127,6 +127,32 @@ npm run check -- https://TU-DESPLIEGUE.vercel.app
 Si `/api/health` da 404, las funciones no están desplegadas: la web se sirve,
 pero los enlaces cortos no se podrán resolver.
 
+### El despliegue no se actualiza
+
+Primero, averigua de dónde sale el que está online: **Vercel → tu proyecto →
+Settings → Git**.
+
+* **No aparece ningún repositorio conectado.** El sitio se subió a mano con
+  `vercel --prod` desde un ordenador. Los `git push` no lo tocan: o se conecta
+  el repo (botón *Connect Git Repository*), o hay que repetir el comando cada
+  vez.
+* **Sí hay repositorio conectado.** Comprueba en *Settings → Git* cuál es la
+  **Production Branch**: si no es la rama que recibe los commits, cada push
+  genera sólo un *Preview* con otra URL, y la URL de producción se queda como
+  estaba. En *Deployments* se ve qué commit corresponde a cada despliegue.
+
+Desplegar desde cero con la CLI:
+
+```bash
+npm i -g vercel
+vercel login
+vercel --prod        # la primera vez pregunta y crea el proyecto
+```
+
+Responde: *Framework* → **Other**, *Build Command* → vacío, *Output Directory*
+→ **public**. La configuración ya está en `vercel.json`, así que basta con
+aceptar lo que propone.
+
 ### Saber qué build está sirviéndose
 
 El pie de la página muestra la versión (`public/version.js`) y la contrasta con
