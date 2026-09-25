@@ -168,6 +168,20 @@ npm run check -- https://TU-DESPLIEGUE.vercel.app
 Si `/api/health` da 404, las funciones no están desplegadas: la web se sirve,
 pero los enlaces cortos no se podrán resolver.
 
+### Desplegar automáticamente en cada push
+
+Lo normal es que Vercel lo haga solo al estar el repositorio conectado. Si no
+lo hace (no aparecen despliegues nuevos tras un push), el repo trae
+`.github/workflows/deploy.yml`, que lo provoca desde GitHub Actions:
+
+1. Vercel → proyecto → **Settings → Git → Deploy Hooks**: crea uno con
+   *Name* `github` y *Branch* `main`, y copia la URL que genera.
+2. GitHub → repo → **Settings → Secrets and variables → Actions → New
+   repository secret**: nombre `VERCEL_DEPLOY_HOOK`, valor esa URL.
+
+A partir de ahí, cada push a `main` pasa los tests y, si están en verde, pide
+el despliegue. También se puede lanzar a mano desde la pestaña **Actions**.
+
 ### El despliegue no se actualiza
 
 Primero, averigua de dónde sale el que está online: **Vercel → tu proyecto →

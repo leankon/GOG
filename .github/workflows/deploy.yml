@@ -1,0 +1,36 @@
+# Despliega en Vercel en cada push, sin depender del webhook de GitHub->Vercel.
+#
+# Necesita un secreto del repositorio llamado VERCEL_DEPLOY_HOOK con la URL del
+# Deploy Hook (Vercel -> proyecto -> Settings -> Git -> Deploy Hooks).
+name: Desplegar en Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No tiene sentido desplegar algo que no pasa sus propias pruebas.
+      - name: Tests
+        run: npm test
+
+      - name: Pedir el despliegue a Vercel
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "Falta el secreto VERCEL_DEPLOY_HOOK (Settings -> Secrets and variables -> Actions)."
+            exit 1
+          fi
+          curl --fail --silent --show-error -X POST "$HOOK" | head -c 500
+          echo
+          echo "Despliegue solicitado. Míralo en Vercel -> Deployments."
